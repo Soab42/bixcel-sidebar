@@ -1,0 +1,39 @@
+# CODEOWNERS
+# Each line is a file pattern followed by one or more owners.
+# Owners are automatically requested for review when someone opens a pull
+# request touching matching files.
+#
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# ---------------------------------------------------------------------------
+# Default owners for everything not matched below
+# ---------------------------------------------------------------------------
+*                                   @bixcel-org/frontend-platform
+
+# ---------------------------------------------------------------------------
+# Sidebar UI Package
+# Owned by the Design System / Frontend Platform team.
+# Any UI, styling, or component API change must be reviewed here.
+# ---------------------------------------------------------------------------
+packages/dashboard-sidebar/         @bixcel-org/design-system @bixcel-org/frontend-platform
+
+# ---------------------------------------------------------------------------
+# Navigation Config Package
+# Owned jointly by Frontend Platform AND Product Owners.
+# Route or role changes affect all apps — requires both teams.
+# ---------------------------------------------------------------------------
+packages/navigation-config/         @bixcel-org/frontend-platform @bixcel-org/product-owners
+
+# ---------------------------------------------------------------------------
+# App integrations
+# Each app is owned by its product team, with frontend-platform as fallback.
+# ---------------------------------------------------------------------------
+apps/crm/                           @bixcel-org/crm-team @bixcel-org/frontend-platform
+apps/admin/                         @bixcel-org/admin-team @bixcel-org/frontend-platform
+
+# ---------------------------------------------------------------------------
+# CI / Release configuration
+# Only the release/DevOps team can modify build or release pipelines.
+# ---------------------------------------------------------------------------
+.github/                            @bixcel-org/devops
+turbo.json                          @bixcel-org/devops @bixcel-org/frontend-platform
