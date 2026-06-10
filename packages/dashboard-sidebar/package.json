@@ -1,5 +1,5 @@
 {
-  "name": "@bixcel/dashboard-sidebar",
+  "name": "@soab42/dashboard-sidebar",
   "version": "1.0.0",
   "description": "Shared, production-quality sidebar UI package for Bixcel SaaS dashboard apps",
   "main": "./dist/index.js",
@@ -47,7 +47,7 @@
   "keywords": ["sidebar", "dashboard", "react", "nextjs", "tailwindcss", "bixcel"],
   "license": "UNLICENSED",
   "publishConfig": {
-    "access": "restricted",
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@bixcel/navigation-config",
+  "name": "@soab42/navigation-config",
   "version": "1.0.0",
   "description": "Typed navigation menu configuration for Bixcel SaaS dashboard apps",
   "main": "./dist/index.js",
@@ -29,12 +29,12 @@
     "typescript": "^5.4.0",
     "tsup": "^8.0.0",
     "vitest": "^1.6.0",
-    "@bixcel/dashboard-sidebar": "workspace:*"
+    "@soab42/dashboard-sidebar": "workspace:*"
   },
   "keywords": ["navigation", "sidebar", "config", "bixcel"],
   "license": "UNLICENSED",
   "publishConfig": {
-    "access": "restricted",
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }
