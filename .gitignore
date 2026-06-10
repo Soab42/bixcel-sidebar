@@ -13,6 +13,9 @@ out/
 # Turbo cache
 .turbo/
 
+# Auth / secrets — never commit
+.npmrc
+
 # Environment files
 .env
 .env.local
