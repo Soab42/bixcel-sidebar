@@ -42,13 +42,37 @@ export interface UserContext {
 /**
  * A single navigation item — leaf node or parent of `children`.
  */
+/**
+ * Identifies an app that an `app`-type link points at. The frontend resolves
+ * the absolute origin from `subdomain` + the configured root domain; `key` is a
+ * stable display/identity slug.
+ */
+export interface SidebarTargetApp {
+  key: string;
+  subdomain?: string | null;
+}
+
+/**
+ * Routing classification for a menu item:
+ *  - `internal` → a route inside the app currently rendering (client-side nav)
+ *  - `app`      → a route owned by ANOTHER Bixcel app (full-page nav, SSO carries)
+ *  - `external` → a third-party URL (opens in a new tab)
+ * A missing value is treated as `internal` (back-compat with `isExternal`).
+ */
+export type SidebarLinkType = "internal" | "app" | "external";
+
 export interface SidebarMenuItem {
   /** Unique identifier within a config */
   id: string | number;
   /** Display text */
   label: string;
-  /** Target URL (supports query strings) */
+  /** Target URL (supports query strings). For `app` links this is a path within
+   *  the target app; the absolute origin is resolved at render time. */
   href: string;
+  /** Routing classification — see {@link SidebarLinkType}. Defaults to `internal`. */
+  linkType?: SidebarLinkType;
+  /** For `app` links — which app this points at. */
+  targetApp?: SidebarTargetApp;
   /** Lucide icon element or any ReactNode. Supply without className — the
    *  sidebar injects sizing/colour classes via React.cloneElement. */
   icon?: ReactNode;
@@ -93,6 +117,42 @@ export interface MenuCountMap {
 }
 
 /**
+ * Identifies the app currently rendering the sidebar. Used to decide whether an
+ * `app` link is to *this* app (client-side nav + active highlighting) or to a
+ * different app (full-page navigation, never highlighted here).
+ */
+export interface CurrentAppContext {
+  /** This app's key — compared against `SidebarMenuItem.targetApp.key`. */
+  appKey: string;
+  /** This app's subdomain (informational). */
+  subdomain?: string | null;
+  /** Optional base path this app is mounted under. */
+  basePath?: string;
+}
+
+/**
+ * Builds an absolute URL for a cross-app (`app`) link. Typically composes
+ * `https://{targetApp.subdomain}.{ROOT_DOMAIN}{href}`. Supplied by the host app
+ * so origins stay environment-driven (never hard-coded in configs).
+ */
+export type AppUrlResolver = (
+  targetApp: SidebarTargetApp,
+  href: string
+) => string;
+
+/**
+ * Result of classifying a menu item's link for rendering.
+ */
+export interface ResolvedLink {
+  /** Final href — absolute for cross-app links, as-authored otherwise. */
+  href: string;
+  /** True → render with Next `<Link>` (client nav); false → plain `<a>`. */
+  isInternalNav: boolean;
+  /** True → open in a new tab (`target="_blank"`). */
+  openInNewTab: boolean;
+}
+
+/**
  * Callback fired on mouse-enter of a child link.
  * Consumers can use this to trigger data prefetching.
  */
@@ -120,6 +180,12 @@ export interface DashboardSidebarProps {
   footerSlot?: ReactNode | undefined;
   /** Additional className applied to the outer <aside> */
   className?: string | undefined;
+  /** Identity of the app rendering this sidebar — enables cross-app routing
+   *  and correct active-state when one shared config spans multiple apps. */
+  currentApp?: CurrentAppContext | undefined;
+  /** Resolves absolute URLs for `app`-type links. Required for cross-app nav;
+   *  without it, `app` links fall back to their raw href. */
+  appUrlResolver?: AppUrlResolver | undefined;
 }
 
 export interface SidebarItemProps {
@@ -150,6 +216,46 @@ export interface SidebarCollapseButtonProps {
   /** Whether the sidebar is currently expanded */
   isExpanded: boolean;
   onToggle: () => void;
+  className?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Icon types
+// ---------------------------------------------------------------------------
+
+/**
+ * Describes how a single menu icon should be rendered. Produced by the backend
+ * icon registry and embedded per-item when the config is fetched with
+ * `?expand=icons`. `icon` itself stays a plain name string on the item — the
+ * descriptor carries the renderable payload.
+ *
+ *  - `bundled` → resolved to an app-provided React element (see `bundled` prop)
+ *  - `url`     → rendered as a CSS-mask (monochrome) or <img>
+ *  - `inline`  → raw SVG markup (sanitized by the backend on save)
+ */
+export type IconDescriptor =
+  | { name: string; source: "bundled"; is_monochrome?: boolean }
+  | { name: string; source: "url"; is_monochrome?: boolean; svg_url: string }
+  | {
+      name: string;
+      source: "inline";
+      is_monochrome?: boolean;
+      svg_markup: string;
+    };
+
+export interface SidebarIconProps {
+  /** Registry descriptor for `url` / `inline` icons (from `?expand=icons`). */
+  descriptor?: IconDescriptor | null;
+  /**
+   * App-provided fallback element for `bundled` icons (resolved from the
+   * consuming app's own icon map). The package never bundles SVG components.
+   */
+  bundled?: ReactNode;
+  /**
+   * Forwarded to the rendered element. When `SidebarIcon` is used as a menu
+   * item's `icon`, the sidebar injects sizing/colour classes here via
+   * `React.cloneElement`.
+   */
   className?: string;
 }
 

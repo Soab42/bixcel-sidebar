@@ -11,6 +11,7 @@ import {
   cn,
 } from "./utils";
 import { SidebarItem } from "./SidebarItem";
+import { SidebarLinkProvider } from "./linkContext";
 
 /**
  * DashboardSidebar
@@ -48,6 +49,8 @@ export function DashboardSidebar({
   onHover,
   footerSlot,
   className,
+  currentApp,
+  appUrlResolver,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -114,27 +117,29 @@ export function DashboardSidebar({
     >
       {/* Scrollable nav area — only this part scrolls, footer stays pinned */}
       <div className="flex-1 overflow-y-auto pt-6">
-        <nav
-          aria-label="Main navigation"
-          className={cn(
-            "space-y-1 3xl:space-y-1.5 fhd:space-y-2",
-            "2k:space-y-3 3k:space-y-4 4k:space-y-5 pb-5"
-          )}
-        >
-          {visibleItems.map((item) => (
-            <SidebarItem
-              key={item.id}
-              item={item}
-              user={user}
-              counts={counts}
-              onHover={onHover}
-              pathname={pathname}
-              statusParam={statusParam}
-              isOpen={Boolean(openMenus[item.id])}
-              onToggle={() => toggleMenu(item.id)}
-            />
-          ))}
-        </nav>
+        <SidebarLinkProvider value={{ currentApp, appUrlResolver }}>
+          <nav
+            aria-label="Main navigation"
+            className={cn(
+              "space-y-1 3xl:space-y-1.5 fhd:space-y-2",
+              "2k:space-y-3 3k:space-y-4 4k:space-y-5 pb-5"
+            )}
+          >
+            {visibleItems.map((item) => (
+              <SidebarItem
+                key={item.id}
+                item={item}
+                user={user}
+                counts={counts}
+                onHover={onHover}
+                pathname={pathname}
+                statusParam={statusParam}
+                isOpen={Boolean(openMenus[item.id])}
+                onToggle={() => toggleMenu(item.id)}
+              />
+            ))}
+          </nav>
+        </SidebarLinkProvider>
       </div>
 
       {/* Footer — always pinned to the bottom, never scrolls away */}

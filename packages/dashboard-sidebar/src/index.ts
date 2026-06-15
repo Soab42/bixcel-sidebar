@@ -4,6 +4,7 @@ export { DashboardSidebar } from "./DashboardSidebar";
 export { SidebarItem } from "./SidebarItem";
 export { SidebarGroup } from "./SidebarGroup";
 export { SidebarCollapseButton } from "./SidebarCollapseButton";
+export { SidebarIcon } from "./SidebarIcon";
 
 // Types
 export type {
@@ -11,6 +12,11 @@ export type {
   UserContext,
   SidebarMenuItem,
   SidebarConfig,
+  SidebarLinkType,
+  SidebarTargetApp,
+  CurrentAppContext,
+  AppUrlResolver,
+  ResolvedLink,
   MenuCountMap,
   OnMenuHover,
   OnRefreshCounts,
@@ -19,6 +25,8 @@ export type {
   SidebarItemProps,
   SidebarGroupProps,
   SidebarCollapseButtonProps,
+  IconDescriptor,
+  SidebarIconProps,
 } from "./types";
 
 // Utilities
@@ -28,6 +36,7 @@ export {
   isParentRouteActive,
   isItemVisible,
   filterMenuItems,
+  resolveItemLink,
   cn,
 } from "./utils";
 

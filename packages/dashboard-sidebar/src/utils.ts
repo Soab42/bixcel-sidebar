@@ -1,4 +1,49 @@
-import type { SidebarMenuItem, UserContext } from "./types";
+import type {
+  AppUrlResolver,
+  CurrentAppContext,
+  ResolvedLink,
+  SidebarMenuItem,
+  UserContext,
+} from "./types";
+
+// ---------------------------------------------------------------------------
+// Link resolution (internal vs cross-app vs external)
+// ---------------------------------------------------------------------------
+
+/**
+ * Classifies a menu item's link for rendering. Decides whether navigation is
+ * client-side (Next `<Link>`), a full-page hop to another app, or a new-tab
+ * external link, and computes the final href.
+ *
+ * An `app` link whose `targetApp.key` equals the current app is treated as
+ * internal — same app, no reload. A missing `linkType` falls back to the legacy
+ * `isExternal` boolean.
+ */
+export function resolveItemLink(
+  item: SidebarMenuItem,
+  currentApp?: CurrentAppContext,
+  appUrlResolver?: AppUrlResolver
+): ResolvedLink {
+  const linkType = item.linkType ?? (item.isExternal ? "external" : "internal");
+
+  if (linkType === "external") {
+    return { href: item.href, isInternalNav: false, openInNewTab: true };
+  }
+
+  if (
+    linkType === "app" &&
+    item.targetApp &&
+    (!currentApp || item.targetApp.key !== currentApp.appKey)
+  ) {
+    const href = appUrlResolver
+      ? appUrlResolver(item.targetApp, item.href)
+      : item.href;
+    return { href, isInternalNav: false, openInNewTab: false };
+  }
+
+  // internal, or an `app` link pointing at the current app
+  return { href: item.href, isInternalNav: true, openInNewTab: false };
+}
 
 // ---------------------------------------------------------------------------
 // URL helpers
