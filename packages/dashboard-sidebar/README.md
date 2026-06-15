@@ -1,98 +1,158 @@
-# @bixcel/dashboard-sidebar
+# @soab42/dashboard-sidebar
 
-Production-ready, config-driven sidebar UI package for Bixcel SaaS dashboard apps.
+Production-ready dashboard UI package for Bixcel SaaS apps. Includes the sidebar, header, types, and Zod validation — one import for everything.
 
-## Features
+## What's included
 
-- Config-driven — no hardcoded routes or roles
-- Role-based and feature-flag item filtering
-- Collapsible groups with localStorage state persistence
-- Active-route highlighting via `usePathname` + `?status=` param
-- Count badges per route
-- Hover callbacks for data prefetching
-- Accessible: `<nav aria-label>`, `aria-current="page"`, `aria-expanded`, keyboard navigation
-- Mobile drawer via shadcn `SidebarProvider`
-- Responsive at Bixcel breakpoints: `md` → `lg` → `3xl` → `fhd` → `2k` → `3k` → `4k`
-- Full TypeScript
+- `DashboardSidebar` — config-driven, role-filtered sidebar
+- `DashboardHeader` — fixed top nav bar with logo/left/right slots
+- `SidebarItem`, `SidebarGroup`, `SidebarCollapseButton` — composable primitives
+- Full TypeScript types (`SidebarConfig`, `SidebarMenuItem`, `UserContext`, …)
+- Zod schemas for validating API-sourced nav config
 
 ## Installation
 
 ```bash
-pnpm add @bixcel/dashboard-sidebar
+pnpm add @soab42/dashboard-sidebar
 ```
 
-Peer dependencies required in the consuming app:
+Peer dependencies:
 
 ```bash
 pnpm add next react react-dom
 ```
 
-## Quick Start
+---
+
+## DashboardHeader
+
+Fixed top navigation bar. All content injected as slots — no Next.js Image or auth imports inside the package.
 
 ```tsx
-// app/dashboard/layout.tsx
-import { DashboardSidebar } from "@bixcel/dashboard-sidebar";
-import { crmSidebarConfig } from "@bixcel/navigation-config";
+import { DashboardHeader } from "@soab42/dashboard-sidebar";
 
-export default function Layout({ children }) {
-  const session = await auth();
-
-  return (
-    <SidebarProvider>
-      <DashboardSidebar
-        config={crmSidebarConfig}
-        user={{
-          userId: session.user.id,
-          role: session.user.role,
-          enabledFeatures: session.user.enabledFeatures,
-        }}
-        footerSlot={<LogoutButton token={session.user.token} />}
+<DashboardHeader
+  leftSlot={<BarButton />}
+  logoSlot={
+    <Link href="/">
+      <Image
+        src={logo}
+        alt="Bixcel"
+        className="w-10 md:w-11 3xl:w-20 fhd:w-24 2k:w-32 3k:w-40 4k:w-50"
       />
-      <main>{children}</main>
-    </SidebarProvider>
-  );
-}
+    </Link>
+  }
+  rightSlot={
+    <>
+      <DashboardNotification session={session} initialNotifications={data} />
+      <UserAvatarDropdown />
+    </>
+  }
+/>
 ```
 
-## Props
+### Props
+
+| Prop | Type | Description |
+|---|---|---|
+| `leftSlot` | `ReactNode` | Left area — sidebar toggle button |
+| `logoSlot` | `ReactNode` | Centre area — app icon / logo |
+| `rightSlot` | `ReactNode` | Right area — notifications, avatar, etc. |
+| `className` | `string` | Extra class on the outer `<header>` |
+
+Responsive heights: `h-11` → `lg:h-14` → `3xl:h-20` → `fhd:h-24` → `2k:h-32` → `3k:h-40` → `4k:h-50`
+
+---
+
+## DashboardSidebar
+
+Config-driven sidebar. Navigation config is fetched from your API and passed as a prop.
+
+```tsx
+import { DashboardSidebar } from "@soab42/dashboard-sidebar";
+import type { SidebarConfig } from "@soab42/dashboard-sidebar";
+
+// Fetch from API in your server component / action
+const config: SidebarConfig = await getNavConfigAction();
+
+<DashboardSidebar
+  config={config}
+  user={{
+    userId: session.user.id,
+    role: session.user.role,
+    enabledFeatures: session.user.enabledFeatures,
+  }}
+  token={session.user.token}
+  counts={menuCounts}
+  onHover={prefetchRoute}
+  footerSlot={<LogoutButton token={token} />}
+/>
+```
+
+### Props
 
 | Prop | Type | Required | Description |
 |---|---|---|---|
-| `config` | `SidebarConfig` | ✓ | Navigation config from `@bixcel/navigation-config` |
-| `user` | `UserContext` | ✓ | Authenticated user context for filtering |
-| `token` | `string` | — | Bearer token passed to count APIs |
-| `counts` | `MenuCountMap` | — | Per-route item counts for badges |
-| `onHover` | `(href: string) => void` | — | Called on child link hover for prefetching |
+| `config` | `SidebarConfig` | ✓ | Navigation config from API |
+| `user` | `UserContext` | ✓ | Authenticated user for role/feature filtering |
+| `token` | `string` | — | Bearer token for count APIs |
+| `counts` | `MenuCountMap` | — | Per-route counts for badges |
+| `onHover` | `(href: string) => void` | — | Hover callback for prefetching |
 | `footerSlot` | `ReactNode` | — | Footer content (logout, support, etc.) |
-| `className` | `string` | — | Additional class on outer element |
+| `className` | `string` | — | Extra class on the outer element |
 
-## Menu Filtering
+### Menu item filtering
 
-Items are filtered by:
+Items are hidden when any of these conditions are true:
 
-1. **`disabled`** — hidden when `true`
-2. **`requiredRoles`** — hidden when `user.role` is not in the array
-3. **`featureFlag`** — hidden when `user.enabledFeatures` does not include the flag
+- `disabled: true`
+- `requiredRoles` is set and `user.role` is not in the array
+- `featureFlag` is set and `user.enabledFeatures` doesn't include the flag
 
-All three rules must pass for an item to be visible.
+---
+
+## Zod validation
+
+Validate your API response before passing to the sidebar:
+
+```ts
+import { validateSidebarConfig, safeParseSidebarConfig } from "@soab42/dashboard-sidebar";
+
+// Throws on invalid shape
+const config = validateSidebarConfig(apiResponse);
+
+// Returns { success, data | error }
+const result = safeParseSidebarConfig(apiResponse);
+if (!result.success) console.error(result.error);
+```
+
+---
+
+## Types
+
+```ts
+import type {
+  SidebarConfig,
+  SidebarMenuItem,
+  UserContext,
+  BixcelRole,
+  MenuCountMap,
+  DashboardSidebarProps,
+  DashboardHeaderProps,
+} from "@soab42/dashboard-sidebar";
+```
+
+---
 
 ## Accessibility
 
 - `<nav aria-label="Main navigation">` landmark
 - `aria-current="page"` on the active leaf link
-- `aria-expanded` on collapsible parent buttons
+- `aria-expanded` on collapsible groups
 - `aria-disabled` on disabled items
-- Collapsed icon-only mode: pass icon with `aria-label` set in the icon component
-- All interactive elements are keyboard-focusable with visible `:focus-visible` ring
+- Full keyboard navigation (`Tab`, `Enter`, `Space`)
 
-## Keyboard Navigation
-
-| Key | Action |
-|---|---|
-| `Tab` | Move focus to next interactive element |
-| `Shift+Tab` | Move focus to previous interactive element |
-| `Enter` / `Space` | Activate focused link or toggle group |
-| `Escape` | Close mobile drawer (handled by shadcn `SidebarProvider`) |
+---
 
 ## Development
 

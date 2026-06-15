@@ -23,12 +23,6 @@ export const BixcelRoleSchema = z.union([
  *
  * `icon` is excluded — it is a React element and not JSON-serialisable.
  * Inject icons at runtime in the consuming app.
- *
- * Note: the explicit `z.ZodTypeAny` annotation is intentional.
- * Annotating with `z.ZodType<SidebarMenuItemInput>` causes a TypeScript
- * incompatibility between Zod's inferred `string[] | undefined` output and
- * the optional property shape in the manual type, so we annotate as
- * `ZodTypeAny` and derive the inferred type from `SidebarConfigSchema` below.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const SidebarMenuItemSchema: z.ZodTypeAny = z.lazy(() =>
@@ -59,10 +53,6 @@ export const SidebarConfigSchema = z.object({
 // Inferred types (icon-free — suitable for JSON transport / server actions)
 // ---------------------------------------------------------------------------
 
-/**
- * A single menu item without icons — safe to serialise and validate.
- * Defined manually to avoid the recursive-inference issue with ZodLazy.
- */
 export type SidebarMenuItemInput = {
   id: string | number;
   label: string;
@@ -75,7 +65,6 @@ export type SidebarMenuItemInput = {
   disabled?: boolean;
 };
 
-/** Top-level config shape — derived from SidebarConfigSchema. */
 export type SidebarConfigInput = {
   app: string;
   version: string;
@@ -86,20 +75,10 @@ export type SidebarConfigInput = {
 // Validation helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Validates a sidebar config and throws a descriptive ZodError on failure.
- * Call this during app startup or in tests.
- *
- * @example
- * validateSidebarConfig(crmSidebarConfig); // throws if invalid
- */
 export function validateSidebarConfig(config: unknown): SidebarConfigInput {
   return SidebarConfigSchema.parse(config) as SidebarConfigInput;
 }
 
-/**
- * Safe version — returns `{ success, data, error }` instead of throwing.
- */
 export function safeParseSidebarConfig(config: unknown) {
   const result = SidebarConfigSchema.safeParse(config);
   if (result.success) {

@@ -1,4 +1,5 @@
 // Components
+export { DashboardHeader } from "./DashboardHeader";
 export { DashboardSidebar } from "./DashboardSidebar";
 export { SidebarItem } from "./SidebarItem";
 export { SidebarGroup } from "./SidebarGroup";
@@ -14,12 +15,13 @@ export type {
   OnMenuHover,
   OnRefreshCounts,
   DashboardSidebarProps,
+  DashboardHeaderProps,
   SidebarItemProps,
   SidebarGroupProps,
   SidebarCollapseButtonProps,
 } from "./types";
 
-// Utilities (exported for consumers who need them, e.g. navigation-config)
+// Utilities
 export {
   cleanHref,
   isRouteActive,
@@ -28,3 +30,13 @@ export {
   filterMenuItems,
   cn,
 } from "./utils";
+
+// Zod validation
+export {
+  BixcelRoleSchema,
+  SidebarMenuItemSchema,
+  SidebarConfigSchema,
+  validateSidebarConfig,
+  safeParseSidebarConfig,
+} from "./schema";
+export type { SidebarMenuItemInput, SidebarConfigInput } from "./schema";

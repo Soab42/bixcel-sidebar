@@ -70,7 +70,7 @@ importers:
         specifier: ^3.23.0
         version: 3.25.76
     devDependencies:
-      '@bixcel/dashboard-sidebar':
+      '@soab42/dashboard-sidebar':
         specifier: workspace:*
         version: link:../dashboard-sidebar
       tsup:

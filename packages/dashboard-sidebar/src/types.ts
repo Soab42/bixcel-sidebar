@@ -73,7 +73,7 @@ export interface SidebarMenuItem {
 
 /**
  * Top-level sidebar configuration object.
- * Produced by `@bixcel/navigation-config` and consumed by `DashboardSidebar`.
+ * Top-level sidebar configuration — produced by `getSidebarConfig()` or defined inline.
  */
 export interface SidebarConfig {
   /** Identifying name for the app that owns this config (e.g. "crm") */
@@ -105,8 +105,7 @@ export type OnMenuHover = (href: string) => void;
 export type OnRefreshCounts = () => void;
 
 export interface DashboardSidebarProps {
-  /** Navigation configuration — use `getSidebarConfig()` from
-   *  `@bixcel/navigation-config` */
+  /** Navigation configuration — use `getSidebarConfig()` or import a config directly */
   config: SidebarConfig;
   /** Authenticated user context for role/feature filtering */
   user: UserContext;
@@ -151,5 +150,45 @@ export interface SidebarCollapseButtonProps {
   /** Whether the sidebar is currently expanded */
   isExpanded: boolean;
   onToggle: () => void;
+  className?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Header types
+// ---------------------------------------------------------------------------
+
+/**
+ * Props for the DashboardHeader component.
+ *
+ * All content areas are accepted as ReactNode slots so the package stays
+ * framework-agnostic (no Next.js Image / auth imports at package level).
+ *
+ * @example
+ * ```tsx
+ * <DashboardHeader
+ *   leftSlot={<BarButton />}
+ *   logoSlot={
+ *     <Link href="/">
+ *       <Image src={logo} alt="Bixcel"
+ *         className="w-10 md:w-11 3xl:w-20 fhd:w-24 2k:w-32 3k:w-40 4k:w-50" />
+ *     </Link>
+ *   }
+ *   rightSlot={
+ *     <>
+ *       <DashboardNotification session={session} initialNotifications={data} />
+ *       <UserAvatarDropdown />
+ *     </>
+ *   }
+ * />
+ * ```
+ */
+export interface DashboardHeaderProps {
+  /** Left section — typically a sidebar toggle button (BarButton). */
+  leftSlot?: ReactNode;
+  /** Centre section — app icon / logo. */
+  logoSlot?: ReactNode;
+  /** Right section — notification bell, avatar dropdown, etc. */
+  rightSlot?: ReactNode;
+  /** Additional className applied to the outer <header> element. */
   className?: string;
 }

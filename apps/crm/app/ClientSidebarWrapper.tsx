@@ -4,10 +4,9 @@ import { useCallback, useEffect, useState, Suspense, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/ui/sidebar";
-import { DashboardSidebar } from "@bixcel/dashboard-sidebar";
-import { crmSidebarConfig } from "@bixcel/navigation-config";
-import type { SidebarConfig, MenuCountMap, SidebarMenuItem } from "@bixcel/dashboard-sidebar";
-import { cleanHref } from "@bixcel/dashboard-sidebar";
+import { DashboardSidebar } from "@soab42/dashboard-sidebar";
+import type { SidebarConfig, MenuCountMap, SidebarMenuItem } from "@soab42/dashboard-sidebar";
+import { cleanHref } from "@soab42/dashboard-sidebar";
 import CONSTRAINTS from "@/lib/constraints";
 import { prefetchData, getWithCacheGeneric } from "@/lib/manual-prefetch";
 import { API_BASE_URL } from "@/lib/constraints";
@@ -53,31 +52,28 @@ function injectIcons(items: SidebarMenuItem[]): SidebarMenuItem[] {
 }
 
 interface ClientSidebarWrapperProps {
-  // Props as passed by bixcel-frontend layout
-  userRole?: string;
-  user?: Record<string, unknown>;
+  config: SidebarConfig;
+  userId: string;
+  role: string;
+  enabledFeatures: string[];
   token: string;
-  data?: unknown; // notifications data — unused here, kept so layout needn't change
 }
 
 export default function ClientSidebarWrapper({
-  userRole,
-  user,
+  config,
+  userId,
+  role,
+  enabledFeatures,
   token,
 }: ClientSidebarWrapperProps) {
-  // Resolve role, userId, enabledFeatures from the user object the layout passes
-  const role = userRole ?? (user?.role as string) ?? "";
-  const userId = (user?.id as string) ?? "";
-  const enabledFeatures = (user?.enabledFeatures as string[]) ?? [];
-
   const pathname = usePathname();
   const [counts, setCounts] = useState<MenuCountMap>({});
 
   // Inject icons on the client — stable reference (config never changes at runtime)
   const configWithIcons = useMemo<SidebarConfig>(() => ({
-    ...crmSidebarConfig,
-    items: injectIcons(crmSidebarConfig.items),
-  }), []);
+    ...config,
+    items: injectIcons(config.items),
+  }), [config]);
 
   // ---------------------------------------------------------------------------
   // Count fetching
@@ -93,7 +89,7 @@ export default function ClientSidebarWrapper({
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(
-        crmSidebarConfig.items.map((item) => ({
+        config.items.map((item) => ({
           id: item.id,
           href: cleanHref(item.href),
           children: item.children?.map((c) => ({ id: c.id, href: cleanHref(c.href) })),
@@ -103,7 +99,7 @@ export default function ClientSidebarWrapper({
       .then((r) => r.json())
       .then((res) => { if (res.success) setCounts(res.data as MenuCountMap); })
       .catch(() => {});
-  }, [token]);
+  }, [token, config]);
 
   useEffect(() => {
     fetchCounts();
