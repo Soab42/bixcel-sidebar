@@ -11,6 +11,58 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.2] — 2026-06-15
+
+### `@soab42/dashboard-sidebar@1.2.2`
+
+#### Fixed
+- Icon hover/active theming for **stroke-based** (Lucide-style `stroke="currentColor"`)
+  and **url-mask** icons. The sidebar previously injected only `fill-*` classes,
+  which never affect `currentColor`, so such icons rendered flat and ignored
+  hover/active. `SidebarItem`/`SidebarGroup` now inject matching `text-*` classes
+  (`text-secondaryText` → `group-hover:text-primary`, `text-primary` when active)
+  so `currentColor` follows the same scheme. `SidebarIcon`'s `inline` branch no
+  longer forces `fill: inherit` (ineffective for stroke icons) — colour flows via
+  `currentColor`.
+
+---
+
+## [1.2.1] — 2026-06-15
+
+### `@soab42/dashboard-sidebar@1.2.1`
+
+#### Fixed
+- `SidebarIcon` — `inline` (SVG markup) icons rendered flat and ignored
+  hover/active theming. The sidebar injects `fill-*` classes onto the icon
+  wrapper; monochrome inline icons now force `fill: inherit` on all descendants
+  so they pick up that fill (overriding any hard-coded `fill="…"` in the markup)
+  and theme identically to bundled icons. Multi-colour inline icons
+  (`is_monochrome: false`) keep their own fills.
+
+---
+
+## [1.2.0] — 2026-06-15
+
+### `@soab42/dashboard-sidebar@1.2.0`
+
+#### Added
+- `SidebarIcon` component — hybrid icon renderer that resolves an icon by its
+  registry `source`: `bundled` (app-provided element), `url` (CSS-mask for
+  monochrome icons, else `<img>`), or `inline` (raw SVG markup). Lets admin-managed
+  `url`/`inline` icons render with no frontend deploy; `bundled` icons still come
+  from the consuming app's own icon map.
+- `IconDescriptor` and `SidebarIconProps` types exported from the package. The
+  descriptor is embedded per-item when the config is fetched with `?expand=icons`.
+
+#### Notes
+- Backward-compatible. Consumers that inject bundled icons directly need no change;
+  to support `url`/`inline` icons, wrap the resolved bundled element and descriptor:
+  `icon: <SidebarIcon descriptor={item.iconDescriptor} bundled={ICON_MAP[item.icon]} />`.
+- `inline` markup is rendered via `dangerouslySetInnerHTML`. The backend sanitizes
+  on save; add a client-side sanitizer in `SidebarIcon` if the source is untrusted.
+
+---
+
 ## [1.1.0] — 2026-06-15
 
 ### `@soab42/dashboard-sidebar@1.1.0`
