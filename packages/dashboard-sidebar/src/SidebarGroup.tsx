@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import type { SidebarGroupProps } from "./types";
 import { cn, isParentRouteActive, isRouteActive, cleanHref } from "./utils";
+import { useResolveLink } from "./linkContext";
 
 /**
  * A collapsible menu group — renders a parent item with a chevron toggle and
@@ -20,6 +21,7 @@ export function SidebarGroup({
   isOpen,
   onToggle,
 }: SidebarGroupProps) {
+  const resolveLink = useResolveLink();
   const parentActive = isParentRouteActive(item, pathname, statusParam);
 
   return (
@@ -52,9 +54,11 @@ export function SidebarGroup({
                 "min-w-3 w-3 3xl:w-5 3xl:min-w-5 fhd:w-7 fhd:min-w-7 2k:w-9 2k:min-w-9 3k:w-11 3k:min-w-11 4k:w-13 4k:min-w-13",
                 "h-3 3xl:h-5 fhd:h-7 2k:h-9 3k:h-11 4k:h-13",
                 "transition duration-300",
+                // `fill-*` themes fill-based icons; `text-*` drives `currentColor`
+                // so stroke-based (Lucide) and url-mask icons theme identically.
                 parentActive
-                  ? "fill-primary"
-                  : "fill-secondaryText group-hover:fill-primary"
+                  ? "fill-primary text-primary"
+                  : "fill-secondaryText text-secondaryText group-hover:fill-primary group-hover:text-primary"
               ),
             })}
           <span>{item.label}</span>
@@ -88,28 +92,13 @@ export function SidebarGroup({
           className="my-4 4k:my-8 mr-2 lg:mr-3 3xl:mr-4 2k:mr-7 3k:mr-10 4k:mr-14"
         >
           {item.children.map((child) => {
-            const childActive = isRouteActive(child.href, pathname, statusParam);
+            const childLink = resolveLink(child);
+            const childActive =
+              childLink.isInternalNav &&
+              isRouteActive(child.href, pathname, statusParam);
             const childCount = counts?.[cleanHref(child.href)];
-
-            return (
-              <li
-                key={child.id}
-                className={cn(
-                  "pt-2 3xl:pt-3 fhd:pt-4 2k:pt-5 3k:pt-6 4k:pt-7 first:pt-0 relative",
-                  "before:absolute before:content-[''] before:h-full last:before:h-1/2",
-                  "before:w-px before:2k:w-0.5 before:bg-secondaryText",
-                  "before:top-0 before:-left-3 before:3xl:-left-5 before:fhd:-left-7 before:2k:-left-9 before:3k:-left-11 before:4k:-left-14",
-                  "ml-5 3xl:ml-10 fhd:ml-12 2k:ml-17 3k:ml-22 4k:ml-28"
-                )}
-              >
-                <Link
-                  href={child.disabled ? "#" : child.href}
-                  aria-disabled={child.disabled}
-                  aria-current={childActive ? "page" : undefined}
-                  onMouseEnter={() => !child.disabled && onHover?.(child.href)}
-                  target={child.isExternal ? "_blank" : undefined}
-                  rel={child.isExternal ? "noopener noreferrer" : undefined}
-                  className={cn(
+            const childHref = child.disabled ? "#" : childLink.href;
+            const childClassName = cn(
                     "text-[8px] lg:text-mxs 3xl:text-base fhd:text-lg 2k:text-2.5xl 3k:text-3.5xl 4k:text-4.5xl",
                     "text-primaryText font-semibold w-full transition-all duration-300",
                     "h-6 lg:h-8 3xl:h-10 fhd:h-12 2k:h-18 3k:h-22 4k:h-26",
@@ -125,24 +114,62 @@ export function SidebarGroup({
                     "before:bottom-3 before:lg:bottom-[13px] before:3xl:bottom-5 before:fhd:bottom-6 before:2k:bottom-8 before:3k:bottom-10 before:4k:bottom-12",
                     childActive ? "bg-secondaryText/10" : "hover:bg-secondaryText/10",
                     child.disabled && "opacity-50 cursor-not-allowed pointer-events-none"
-                  )}
-                >
-                  {child.label}
-                  {childCount != null && childCount > 0 && (
-                    <span
-                      aria-label={`${childCount} items`}
-                      className={cn(
-                        "rounded-full max-w-max bg-white border border-gray-200",
-                        "px-2 2k:px-3 4k:px-4 py-2 min-w-4",
-                        "h-4 3xl:h-7 fhd:h-8 2k:h-10 3k:h-12 4k:h-15",
-                        "flex items-center justify-center ml-2 2k:ml-3 4k:ml-5",
-                        "text-[8px] lg:text-xs 3xl:text-sm fhd:text-base 2k:text-2xl 3k:text-3xl 4k:text-3.5xl font-medium"
-                      )}
-                    >
-                      {childCount}
-                    </span>
-                  )}
-                </Link>
+                  );
+
+            const childOnHover = () => !child.disabled && onHover?.(child.href);
+            const childChildren = (
+              <>
+                {child.label}
+                {childCount != null && childCount > 0 && (
+                  <span
+                    aria-label={`${childCount} items`}
+                    className={cn(
+                      "rounded-full max-w-max bg-white border border-gray-200",
+                      "px-2 2k:px-3 4k:px-4 py-2 min-w-4",
+                      "h-4 3xl:h-7 fhd:h-8 2k:h-10 3k:h-12 4k:h-15",
+                      "flex items-center justify-center ml-2 2k:ml-3 4k:ml-5",
+                      "text-[8px] lg:text-xs 3xl:text-sm fhd:text-base 2k:text-2xl 3k:text-3xl 4k:text-3.5xl font-medium"
+                    )}
+                  >
+                    {childCount}
+                  </span>
+                )}
+              </>
+            );
+
+            return (
+              <li
+                key={child.id}
+                className={cn(
+                  "pt-2 3xl:pt-3 fhd:pt-4 2k:pt-5 3k:pt-6 4k:pt-7 first:pt-0 relative",
+                  "before:absolute before:content-[''] before:h-full last:before:h-1/2",
+                  "before:w-px before:2k:w-0.5 before:bg-secondaryText",
+                  "before:top-0 before:-left-3 before:3xl:-left-5 before:fhd:-left-7 before:2k:-left-9 before:3k:-left-11 before:4k:-left-14",
+                  "ml-5 3xl:ml-10 fhd:ml-12 2k:ml-17 3k:ml-22 4k:ml-28"
+                )}
+              >
+                {childLink.isInternalNav ? (
+                  <Link
+                    href={childHref}
+                    aria-disabled={child.disabled}
+                    aria-current={childActive ? "page" : undefined}
+                    onMouseEnter={childOnHover}
+                    className={childClassName}
+                  >
+                    {childChildren}
+                  </Link>
+                ) : (
+                  <a
+                    href={childHref}
+                    aria-disabled={child.disabled}
+                    onMouseEnter={childOnHover}
+                    target={childLink.openInNewTab ? "_blank" : undefined}
+                    rel={childLink.openInNewTab ? "noopener noreferrer" : undefined}
+                    className={childClassName}
+                  >
+                    {childChildren}
+                  </a>
+                )}
               </li>
             );
           })}

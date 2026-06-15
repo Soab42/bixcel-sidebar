@@ -25,11 +25,20 @@ export const BixcelRoleSchema = z.union([
  * Inject icons at runtime in the consuming app.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const SidebarLinkTypeSchema = z.enum(["internal", "app", "external"]);
+
+export const SidebarTargetAppSchema = z.object({
+  key: z.string().min(1),
+  subdomain: z.string().nullable().optional(),
+});
+
 export const SidebarMenuItemSchema: z.ZodTypeAny = z.lazy(() =>
   z.object({
     id: z.union([z.string(), z.number()]),
     label: z.string().min(1, "Label must not be empty"),
     href: z.string().min(1, "href must not be empty"),
+    linkType: SidebarLinkTypeSchema.optional(),
+    targetApp: SidebarTargetAppSchema.optional(),
     requiredRoles: z.array(BixcelRoleSchema).optional(),
     featureFlag: z.string().optional(),
     children: z.array(SidebarMenuItemSchema).optional(),
@@ -57,6 +66,8 @@ export type SidebarMenuItemInput = {
   id: string | number;
   label: string;
   href: string;
+  linkType?: "internal" | "app" | "external";
+  targetApp?: { key: string; subdomain?: string | null };
   requiredRoles?: string[];
   featureFlag?: string;
   children?: SidebarMenuItemInput[];
