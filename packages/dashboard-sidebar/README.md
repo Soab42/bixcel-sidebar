@@ -1,14 +1,24 @@
 # @soab42/dashboard-sidebar
 
-Production-ready dashboard UI package for Bixcel SaaS apps. Includes the sidebar, header, types, and Zod validation — one import for everything.
+Production-ready dashboard UI package for Bixcel SaaS apps. Ships the sidebar, header, and their types.
 
 ## What's included
 
 - `DashboardSidebar` — config-driven, role-filtered sidebar
 - `DashboardHeader` — fixed top nav bar with logo/left/right slots
-- `SidebarItem`, `SidebarGroup`, `SidebarCollapseButton` — composable primitives
+- `SidebarIcon` — registry-driven icon renderer (`bundled` / `url` / `inline`)
 - Full TypeScript types (`SidebarConfig`, `SidebarMenuItem`, `UserContext`, …)
-- Zod schemas for validating API-sourced nav config
+- A server-safe `@soab42/dashboard-sidebar/core` entry for pure helpers + types
+
+## Entry points
+
+| Import | Contains | Safe in React Server Components? |
+|---|---|---|
+| `@soab42/dashboard-sidebar` | `DashboardSidebar`, `DashboardHeader`, `SidebarIcon` + types | No — client components (`"use client"`) |
+| `@soab42/dashboard-sidebar/core` | `cleanHref`, `isRouteActive`, `isParentRouteActive`, `isItemVisible`, `filterMenuItems`, `resolveItemLink`, `cn` + types | Yes — no client boundary |
+
+Import pure helpers and types from `/core` in server components; import the
+components from the package root in client code.
 
 ## Installation
 
@@ -111,35 +121,42 @@ Items are hidden when any of these conditions are true:
 
 ---
 
-## Zod validation
+## Server-safe helpers (`/core`)
 
-Validate your API response before passing to the sidebar:
+Pure functions and types — importable from React Server Components:
 
 ```ts
-import { validateSidebarConfig, safeParseSidebarConfig } from "@soab42/dashboard-sidebar";
+import {
+  cleanHref,
+  isRouteActive,
+  isParentRouteActive,
+  isItemVisible,
+  filterMenuItems,
+  resolveItemLink,
+  cn,
+} from "@soab42/dashboard-sidebar/core";
 
-// Throws on invalid shape
-const config = validateSidebarConfig(apiResponse);
-
-// Returns { success, data | error }
-const result = safeParseSidebarConfig(apiResponse);
-if (!result.success) console.error(result.error);
+// e.g. strip pagination params before a count-map lookup
+const key = cleanHref("/dashboard/applications?status=open&page=2");
 ```
 
 ---
 
 ## Types
 
+Types are re-exported from both entries — use `/core` in server code:
+
 ```ts
 import type {
   SidebarConfig,
   SidebarMenuItem,
+  SidebarConfigInput,
   UserContext,
   BixcelRole,
   MenuCountMap,
   DashboardSidebarProps,
   DashboardHeaderProps,
-} from "@soab42/dashboard-sidebar";
+} from "@soab42/dashboard-sidebar/core";
 ```
 
 ---

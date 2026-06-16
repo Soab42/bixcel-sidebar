@@ -11,6 +11,47 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.0.0] — 2026-06-16
+
+### `@soab42/dashboard-sidebar@2.0.0`
+
+Cleanup + RSC build split. The package now ships a server-safe `/core` entry so
+pure helpers and types can be imported from React Server Components, and the main
+entry carries a `"use client";` banner that survives bundling.
+
+#### Added
+- **`@soab42/dashboard-sidebar/core`** — server-safe entry exporting the pure
+  helpers (`cleanHref`, `isRouteActive`, `isParentRouteActive`, `isItemVisible`,
+  `filterMenuItems`, `resolveItemLink`, `cn`) and all shared types. Importable
+  from React Server Components.
+
+#### Changed
+- **BREAKING** — Build is now multi-entry (`index` + `core`) via `tsup.config.ts`.
+  The client `index` bundle gets a `"use client";` banner; `core` deliberately
+  does not, keeping it server-importable.
+
+#### Removed
+- **BREAKING** — `cleanHref`, `isRouteActive`, `isParentRouteActive`,
+  `isItemVisible`, `filterMenuItems`, `resolveItemLink`, and `cn` are no longer
+  exported from the package root. Import them from `@soab42/dashboard-sidebar/core`.
+- **BREAKING** — Internal render primitives `SidebarItem`, `SidebarGroup`,
+  `SidebarCollapseButton` (and their `*Props` types) are no longer exported.
+- **BREAKING** — Dropped Zod validation: `schema.ts`, `BixcelRoleSchema`,
+  `SidebarMenuItemSchema`, `SidebarConfigSchema`, `validateSidebarConfig`, and
+  `safeParseSidebarConfig` are removed. The `SidebarMenuItemInput` /
+  `SidebarConfigInput` types remain (now in `types.ts`).
+- **BREAKING** — Removed the unused `OnRefreshCounts` type export.
+- Dropped unused runtime dependencies `clsx`, `tailwind-merge`, and `zod`.
+  (`cn` is hand-rolled in `utils.ts`.)
+
+#### Migration
+- Server-side imports of pure helpers / types → `@soab42/dashboard-sidebar/core`.
+- `cleanHref` and other helpers in client code → also `/core`.
+- Replace `validateSidebarConfig` / `safeParseSidebarConfig` usage with
+  server-side validation (the nav tree is API-driven and validated upstream).
+
+---
+
 ## [1.2.2] — 2026-06-15
 
 ### `@soab42/dashboard-sidebar@1.2.2`

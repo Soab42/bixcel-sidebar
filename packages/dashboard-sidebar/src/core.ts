@@ -1,17 +1,24 @@
 // ---------------------------------------------------------------------------
-// Client entry — React components.
+// Server-safe entry — pure helpers + shared types only.
 //
-// This bundle ships with a `"use client"` banner (see tsup.config.ts). For
-// pure helpers and types that are safe to import from React Server Components,
-// import from `@soab42/dashboard-sidebar/core` instead.
+// This module contains NO React client boundaries (`"use client"`, hooks,
+// `createContext`), so it is importable from React Server Components. Import
+// the client components (`DashboardSidebar`, `DashboardHeader`, `SidebarIcon`)
+// from the package root instead.
 // ---------------------------------------------------------------------------
 
-// Components
-export { DashboardHeader } from "./DashboardHeader";
-export { DashboardSidebar } from "./DashboardSidebar";
-export { SidebarIcon } from "./SidebarIcon";
+// Pure utilities
+export {
+  cleanHref,
+  isRouteActive,
+  isParentRouteActive,
+  isItemVisible,
+  filterMenuItems,
+  resolveItemLink,
+  cn,
+} from "./utils";
 
-// Types (also available — server-safe — from `/core`)
+// Shared types
 export type {
   BixcelRole,
   UserContext,

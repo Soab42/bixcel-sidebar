@@ -108,6 +108,31 @@ export interface SidebarConfig {
   items: SidebarMenuItem[];
 }
 
+/**
+ * Icon-free, JSON-serialisable shape of a menu item — suitable for transport
+ * over server actions / API boundaries before icons are injected at runtime.
+ */
+export type SidebarMenuItemInput = {
+  id: string | number;
+  label: string;
+  href: string;
+  linkType?: SidebarLinkType;
+  targetApp?: { key: string; subdomain?: string | null };
+  requiredRoles?: string[];
+  featureFlag?: string;
+  children?: SidebarMenuItemInput[];
+  isExternal?: boolean;
+  badge?: number | string | null;
+  disabled?: boolean;
+};
+
+/** Icon-free, JSON-serialisable shape of {@link SidebarConfig}. */
+export type SidebarConfigInput = {
+  app: string;
+  version: string;
+  items: SidebarMenuItemInput[];
+};
+
 // ---------------------------------------------------------------------------
 // Component prop types
 // ---------------------------------------------------------------------------
@@ -157,12 +182,6 @@ export interface ResolvedLink {
  * Consumers can use this to trigger data prefetching.
  */
 export type OnMenuHover = (href: string) => void;
-
-/**
- * Callback fired when the active sidebar count should be refreshed.
- * Consumers should call their count-fetch API and call `updateCounts`.
- */
-export type OnRefreshCounts = () => void;
 
 export interface DashboardSidebarProps {
   /** Navigation configuration — use `getSidebarConfig()` or import a config directly */

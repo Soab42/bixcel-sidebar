@@ -8,7 +8,7 @@ Monorepo for `@soab42/dashboard-sidebar` — shared, production-quality dashboar
 
 | Package | Description |
 |---|---|
-| [`@soab42/dashboard-sidebar`](./packages/dashboard-sidebar) | Sidebar + header components, types, Zod validation |
+| [`@soab42/dashboard-sidebar`](./packages/dashboard-sidebar) | Sidebar + header components, types, and a server-safe `/core` entry |
 
 ---
 

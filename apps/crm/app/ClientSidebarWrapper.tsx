@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@soab42/dashboard-sidebar";
 import type { SidebarConfig, MenuCountMap, SidebarMenuItem } from "@soab42/dashboard-sidebar";
-import { cleanHref } from "@soab42/dashboard-sidebar";
+import { cleanHref } from "@soab42/dashboard-sidebar/core";
 import CONSTRAINTS from "@/lib/constraints";
 import { prefetchData, getWithCacheGeneric } from "@/lib/manual-prefetch";
 import { API_BASE_URL } from "@/lib/constraints";
